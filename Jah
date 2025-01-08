@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .data-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .data-item h3 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Firestore Data</h1>
+    <div id="data"></div>
+
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, enableIndexedDbPersistence, setLogLevel } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuhEPXBrz2fvS95YsoHj_z9h6AUP51uBI",
+            authDomain: "hotel101-app---production.firebaseapp.com",
+            projectId: "hotel101-app---production",
+            storageBucket: "hotel101-app---production.appspot.com",
+            messagingSenderId: "949373406105",
+            appId: "1:949373406105:android:5e337f8180d94bad6ee108",
+            measurementId: "G-XXXXXXXXXX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Enable detailed logging for debugging
+        setLogLevel('debug'); // Enable debug-level logging
+
+        // Enable offline persistence
+        enableIndexedDbPersistence(db)
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.error("Persistence failed: Multiple tabs open.");
+                } else if (err.code == 'unimplemented') {
+                    console.error("Persistence is not available.");
+                }
+            });
+
+        // Function to check if email exists in Firestore
+        function checkEmailInFirestore(email) {
+            const usersCollection = collection(db, "users");
+            const q = query(usersCollection, where("email", "==", email));
+
+            getDocs(q)
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        document.getElementById("data").innerHTML = `<p>No user found with the email: ${email}</p>`;
+                    } else {
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            const userId = doc.id;
+                            const userData = `
+                                <div class="data-item">
+                                    <h3>User ID: ${userId}</h3>
+                                    <p><strong>Email:</strong> ${data.email}</p>
+                                    <p><strong>First Name:</strong> ${data.first}</p>
+                                    <p><strong>Last Name:</strong> ${data.last}</p>
+                                    <p><strong>Born:</strong> ${data.born}</p>
+                                </div>
+                            `;
+                            document.getElementById("data").innerHTML = userData;
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error retrieving data:", error);
+                    document.getElementById("data").innerHTML = "<p>Error retrieving data.</p>";
+                });
+        }
+
+        // Start by checking the email
+        checkEmailInFirestore("blyron.sarkisin@adgome.com");
+    </script>
+
+</body>
+</html>
