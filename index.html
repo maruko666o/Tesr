@@ -16,6 +16,20 @@
     #output {
       margin-top: 20px;
     }
+    #donation {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    #donation h3 {
+      margin: 0;
+      color: #333;
+    }
+    #donation p {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
@@ -24,6 +38,14 @@
   <input type="file" id="fileInput" multiple accept="image/*">
   <button id="processBtn">Process Images</button>
   <div id="output"></div>
+
+  <div id="donation">
+    <h3>Enjoying this tool? Support its development!</h3>
+    <p>If you'd like to donate, here are my account details:</p>
+    <p><strong>Account Name:</strong> L***** B*****</p>
+    <p><strong>Mobile Number:</strong> 09675522991</p>
+    <p>Thank you for your generosity!</p>
+  </div>
 
   <!-- Libraries: Tesseract.js for OCR and jsPDF for PDF generation -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
