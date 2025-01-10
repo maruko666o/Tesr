@@ -61,6 +61,25 @@
       background-color: #1e8449;
     }
 
+    /* Progress Bar */
+    #progressContainer {
+      margin: 20px auto;
+      width: 80%;
+      max-width: 500px;
+      background-color: rgba(46, 204, 113, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      height: 20px;
+      display: none;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0;
+      background-color: #27ae60;
+      transition: width 0.3s ease;
+    }
+
     /* Output Section */
     #output {
       margin-top: 30px;
@@ -100,33 +119,6 @@
       font-size: 0.9rem;
       color: #34495e;
     }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2rem;
-      }
-
-      p {
-        font-size: 0.9rem;
-      }
-
-      #fileInput {
-        font-size: 0.9rem;
-      }
-
-      #processBtn {
-        font-size: 0.9rem;
-      }
-
-      #donation h3 {
-        font-size: 1.2rem;
-      }
-
-      #donation p {
-        font-size: 0.9rem;
-      }
-    }
   </style>
 </head>
 <body>
@@ -134,6 +126,12 @@
   <p>Your reliable tool for extracting and organizing text from images!</p>
   <input type="file" id="fileInput" multiple accept="image/*">
   <button id="processBtn">Process Images</button>
+
+  <!-- Progress Bar -->
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+
   <div id="output"></div>
 
   <div id="donation">
@@ -158,6 +156,8 @@
   <script>
     const fileInput = document.getElementById("fileInput");
     const processBtn = document.getElementById("processBtn");
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
     const outputDiv = document.getElementById("output");
     const copyNumber = document.getElementById("copyNumber");
 
@@ -174,11 +174,16 @@
         return;
       }
 
-      outputDiv.innerHTML = "Processing images... Please wait.";
+      outputDiv.innerHTML = "";
+      progressContainer.style.display = "block";
+      progressBar.style.width = "0%";
+
       const files = Array.from(fileInput.files);
+      const totalFiles = files.length;
       const extractedTexts = [];
 
-      for (const file of files) {
+      for (let i = 0; i < totalFiles; i++) {
+        const file = files[i];
         try {
           const text = await extractTextFromImage(file);
           const formattedText = extractSpecificPattern(text);
@@ -186,7 +191,12 @@
         } catch (err) {
           console.error("Error processing file:", file.name, err);
         }
+        // Update progress bar
+        const progress = ((i + 1) / totalFiles) * 100;
+        progressBar.style.width = `${progress}%`;
       }
+
+      progressContainer.style.display = "none";
 
       if (extractedTexts.length > 0) {
         generatePDF(extractedTexts);
