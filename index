@@ -1,38 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firestore Example</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .data-item {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .data-item h3 {
-            margin: 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Image Text Extractor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    #fileInput {
+      margin: 20px;
+    }
+    #output {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Batch Image Text Extractor</h1>
+  <p>Upload images, and it will extract and save the formatted text to a numbered PDF file.</p>
+  <input type="file" id="fileInput" multiple accept="image/*">
+  <button id="processBtn">Process Images</button>
+  <div id="output"></div>
 
-    <h1>Firestore Data</h1>
-    <div id="data"></div>
+  <!-- Libraries: Tesseract.js for OCR and jsPDF for PDF generation -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const processBtn = document.getElementById("processBtn");
+    const outputDiv = document.getElementById("output");
 
-    <script type="module">
-        // Import Firebase SDK
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, enableIndexedDbPersistence, setLogLevel } from "https://www.gstatic.com/firebasejs/9.8.2/firebase-firestore.js";
+    processBtn.addEventListener("click", async () => {
+      if (!fileInput.files.length) {
+        alert("Please select at least one image.");
+        return;
+      }
 
-        // Firebase configuration
-        const firebaseConfig = {
-            ("blyron.sarkisin@adgome.com");
-    </script>
+      outputDiv.innerHTML = "Processing images... Please wait.";
+      const files = Array.from(fileInput.files);
+      const extractedTexts = [];
 
+      for (const file of files) {
+        try {
+          const text = await extractTextFromImage(file);
+          const formattedText = extractSpecificPattern(text);
+          if (formattedText) extractedTexts.push(...formattedText.split("\n"));
+        } catch (err) {
+          console.error("Error processing file:", file.name, err);
+        }
+      }
+
+      if (extractedTexts.length > 0) {
+        generatePDF(extractedTexts);
+        outputDiv.innerHTML = "PDF file is ready for download.";
+      } else {
+        outputDiv.innerHTML = "No matching text patterns found.";
+      }
+    });
+
+    async function extractTextFromImage(file) {
+      const { data: { text } } = await Tesseract.recognize(file, "eng");
+      return text;
+    }
+
+    function extractSpecificPattern(text) {
+      const pattern = /=\d+=\w+=/g; // Adjust regex for your desired format
+      const matches = text.match(pattern);
+      return matches ? matches.join("\n") : null;
+    }
+
+    function generatePDF(texts) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      let yPosition = 10;
+
+      pdf.text("Extracted Texts (Numbered List):", 10, yPosition);
+      yPosition += 10;
+
+      texts.forEach((text, index) => {
+        if (yPosition > 280) { // Add a new page if text exceeds the page
+          pdf.addPage();
+          yPosition = 10;
+        }
+        pdf.text(`${index + 1}. ${text}`, 10, yPosition);
+        yPosition += 10;
+      });
+
+      pdf.save("extracted_texts.pdf");
+    }
+  </script>
 </body>
 </html>
