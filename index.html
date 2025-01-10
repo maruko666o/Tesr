@@ -13,8 +13,8 @@
     }
     body {
       font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #ffffff;
+      background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+      color: #34495e;
       text-align: center;
       padding: 20px;
     }
@@ -22,6 +22,7 @@
     h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
+      color: #2c3e50;
     }
 
     p {
@@ -34,10 +35,10 @@
       display: block;
       margin: 20px auto;
       padding: 10px;
-      border: 2px dashed #ffffff;
+      border: 2px dashed #2ecc71;
       border-radius: 5px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
+      background-color: rgba(46, 204, 113, 0.1);
+      color: #34495e;
       font-size: 1rem;
       cursor: pointer;
       width: 80%;
@@ -47,8 +48,8 @@
     #processBtn {
       padding: 12px 30px;
       font-size: 1rem;
-      color: #ffffff;
-      background-color: #ff9800;
+      color: #fff;
+      background-color: #27ae60;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -57,7 +58,7 @@
     }
 
     #processBtn:hover {
-      background-color: #e68a00;
+      background-color: #1e8449;
     }
 
     /* Output Section */
@@ -70,7 +71,7 @@
     #donation {
       margin-top: 40px;
       padding: 20px;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.1);
       border-radius: 10px;
     }
 
@@ -84,11 +85,20 @@
       margin: 5px 0;
     }
 
+    #donation span {
+      display: inline-block;
+      margin-top: 10px;
+      color: #16a085;
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
     /* Footer */
     footer {
       margin-top: 50px;
       font-size: 0.9rem;
-      color: #c1c1c1;
+      color: #34495e;
     }
 
     /* Responsive Design */
@@ -128,10 +138,13 @@
 
   <div id="donation">
     <h3>Support the Development of Hotel 101 Tools!</h3>
-    <p>If you find this tool helpful, consider donating on Gcash:</p>
+    <p>If you find this tool helpful, consider donating:</p>
     <p><strong>Account Name:</strong> L***** B*****</p>
-    <p><strong>Mobile Number:</strong> 09675522991</p>
-    <p>Thank you for supporting our mission!</p>
+    <p>
+      <strong>Mobile Number:</strong>
+      <span id="copyNumber">09675522991</span>
+    </p>
+    <p>Click on the number to copy it to your clipboard. Thank you for supporting our mission!</p>
   </div>
 
   <footer>
@@ -146,6 +159,14 @@
     const fileInput = document.getElementById("fileInput");
     const processBtn = document.getElementById("processBtn");
     const outputDiv = document.getElementById("output");
+    const copyNumber = document.getElementById("copyNumber");
+
+    // Copy number to clipboard
+    copyNumber.addEventListener("click", () => {
+      navigator.clipboard.writeText(copyNumber.textContent)
+        .then(() => alert("Number copied to clipboard!"))
+        .catch(err => alert("Failed to copy number."));
+    });
 
     processBtn.addEventListener("click", async () => {
       if (!fileInput.files.length) {
@@ -188,19 +209,24 @@
 
     function generatePDF(texts) {
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF();
-      let yPosition = 10;
+      const pdf = new jsPDF({ unit: "mm", format: "a4" }); // A4 size
+      const pageHeight = 297; // A4 height in mm
+      const lineHeight = 10;
+      const margin = 10;
+      const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
+      let yPosition = margin;
 
-      pdf.text("Extracted Texts (Numbered List):", 10, yPosition);
-      yPosition += 10;
+      pdf.setFontSize(12);
+      pdf.text("Extracted Texts (Numbered List):", margin, yPosition);
+      yPosition += lineHeight;
 
       texts.forEach((text, index) => {
-        if (yPosition > 280) { // Add a new page if text exceeds the page
+        if (yPosition > pageHeight - margin) {
           pdf.addPage();
-          yPosition = 10;
+          yPosition = margin;
         }
-        pdf.text(`${index + 1}. ${text}`, 10, yPosition);
-        yPosition += 10;
+        pdf.text(`${index + 1}. ${text}`, margin, yPosition);
+        yPosition += lineHeight;
       });
 
       pdf.save("extracted_texts.pdf");
